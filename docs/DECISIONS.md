@@ -3,6 +3,30 @@
 Non-obvious choices and the reasoning behind them, so they don't get
 re-litigated or accidentally reverted.
 
+## Native Drive Markdown export for single-tab Docs (2026-09-27)
+
+`convertDocument_` (src/docs.ts) calls Drive's own `files.export`
+(`mimeType=text/markdown`, via `UrlFetchApp` + `ScriptApp.getOAuthToken()`)
+when a Doc has exactly one tab with no children, instead of the
+hand-rolled `bodyToMarkdown_` walker. Any other tab shape (more than one
+root tab, or a tab with children) falls back to walking every tab
+ourselves with the original element-by-element converter.
+
+**Why:** Google's own export is a much more complete Markdown converter
+than a hand-rolled one — better list/table fidelity, and it embeds images
+as base64 data URIs (`![image1]: <data:image/png;base64,...>`) instead of
+a bare placeholder. But `files.export` operates on a whole Drive file, not
+a tab: there is no parameter to select a tab, and Docs' own UI export only
+even attempts an "all tabs" mode as a client-side feature (a ZIP of
+separate files per tab), not something the REST/Apps Script API exposes.
+For a multi-tab doc there is no documented guarantee of *which* tab
+content the export actually returns, so rather than guess, native export
+is used only for the unambiguous single-flat-tab case; every other case
+keeps using our own per-tab walker, which is the only way to reliably
+reach tab 2+. This means the escaping/list-numbering/image-placeholder
+heuristics documented below only matter for multi-tab documents now — the
+common single-tab case gets Google's own conversion quality.
+
 ## Plain `tsc` emit instead of a bundler (2026-09-27)
 
 clasp 3.x dropped its built-in TypeScript transpilation (present in clasp

@@ -1,10 +1,46 @@
 /**
  * Document -> Markdown conversion, recursing through Docs tabs.
+ *
+ * Drive's own `files.export` (mimeType text/markdown) produces far more
+ * complete Markdown than the hand-rolled walker below (proper nested lists,
+ * images as data URIs, etc.) — but it has no concept of tabs: it exports
+ * "the document", with undefined behavior for anything beyond a single flat
+ * tab. So native export is used only when there is exactly one tab and it
+ * has no children; any other shape falls back to walking every tab
+ * ourselves. See docs/DECISIONS.md.
  */
 
 function convertDocument_(doc: GoogleAppsScript.Document.Document): DocContent {
-  const tabs = doc.getTabs().map(convertTab_);
+  const rootTabs = doc.getTabs();
+  const isSingleFlatTab = rootTabs.length === 1 && rootTabs[0].getChildTabs().length === 0;
+
+  const tabs = isSingleFlatTab
+    ? [
+        {
+          id: rootTabs[0].getId(),
+          title: rootTabs[0].getTitle(),
+          markdown: exportMarkdown_(doc.getId()),
+        },
+      ]
+    : rootTabs.map(convertTab_);
+
   return { id: doc.getId(), name: doc.getName(), tabs };
+}
+
+function exportMarkdown_(documentId: string): string {
+  const url = `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(documentId)}/export?mimeType=text%2Fmarkdown`;
+  const response = UrlFetchApp.fetch(url, {
+    headers: { Authorization: `Bearer ${ScriptApp.getOAuthToken()}` },
+    muteHttpExceptions: true,
+  });
+
+  if (response.getResponseCode() !== 200) {
+    throw new Error(
+      `Drive Markdown export failed for ${documentId} (HTTP ${response.getResponseCode()}): ${response.getContentText()}`
+    );
+  }
+
+  return response.getContentText();
 }
 
 function convertTab_(tab: GoogleAppsScript.Document.Tab): DocTab {

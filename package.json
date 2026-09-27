@@ -1,6 +1,6 @@
 {
   "name": "drive-scribe",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Recursive Google Drive hierarchy walker: Docs to Markdown, Sheets to JSON, tabs included. Published as an Apps Script library.",
   "license": "GPL-3.0-or-later",
