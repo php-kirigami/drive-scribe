@@ -78,6 +78,35 @@ convention).
 3. Call it as `DriveScribe.walk('<folder-id>')` (or whatever identifier
    you gave the library import).
 
+## Using it as a web app (e.g. from a Kirigami plugin)
+
+A caller outside Apps Script — a Node build script, a Kirigami plugin —
+can't add this project as a library, so it calls the deployed web app
+over plain HTTP instead:
+
+```
+GET https://script.google.com/macros/s/<deploymentId>/exec
+    ?token=<DRIVE_SCRIBE_TOKEN>
+    &action=walk|docToMarkdown|sheetToJson
+    &folderId=...        (for action=walk)
+    &includeFiles=true   (optional, action=walk)
+    &maxDepth=3           (optional, action=walk)
+    &documentId=...       (for action=docToMarkdown)
+    &spreadsheetId=...    (for action=sheetToJson)
+```
+
+Response is always HTTP 200 with a JSON body — Apps Script web apps can't
+set a real status code — so check `ok`, not the status:
+
+```jsonc
+{ "ok": true, "result": { /* same shape as the library API */ } }
+{ "ok": false, "error": "Unauthorized." }
+```
+
+One-time setup: in the Apps Script editor, **Project Settings** ->
+**Script Properties** -> add `DRIVE_SCRIBE_TOKEN` with a secret value.
+Rotating it later needs no redeploy, just a property edit.
+
 ## Development
 
 ```sh

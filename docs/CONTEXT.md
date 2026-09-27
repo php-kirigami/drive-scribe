@@ -24,6 +24,7 @@ src/
   drive.ts          — recursive folder walk, Drive file metadata (dates)
   docs.ts           — Document -> Markdown, recursing through tabs
   sheets.ts         — Spreadsheet -> JSON, one entry per sheet
+  webapp.ts         — doGet HTTP endpoint for non-Apps-Script callers
 scripts/
   build.mjs         — tsc emit to build/ + copies appsscript.json there
 build/              — generated, gitignored; what `clasp push` actually pushes
@@ -46,6 +47,12 @@ Every other function is an internal helper (trailing underscore), the
 Apps Script convention for hiding it from a consuming script's
 autocomplete — libraries expose every top-level function/var, there's no
 real access control.
+
+There's also `doGet` (src/webapp.ts), a web app entry point wrapping the
+same three functions as an HTTP endpoint for callers that aren't Apps
+Script projects — a Node-based Kirigami plugin, chiefly. See
+[DECISIONS.md](DECISIONS.md) for why it's public-but-token-gated instead
+of using Google's own auth, and the README for its request/response shape.
 
 ## Licensing
 
