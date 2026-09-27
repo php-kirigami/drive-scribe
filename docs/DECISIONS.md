@@ -3,6 +3,24 @@
 Non-obvious choices and the reasoning behind them, so they don't get
 re-litigated or accidentally reverted.
 
+## Plain `tsc` emit instead of a bundler (2026-09-27)
+
+clasp 3.x dropped its built-in TypeScript transpilation (present in clasp
+2.x) and its own docs now recommend a bundler (Rollup, esbuild, etc.) with
+a real `build/` step. `scripts/build.mjs` just runs `tsc` (real emit, not
+`--noEmit`) via `typescript/bin/tsc`, then copies `src/appsscript.json`
+into `build/`; `npm run push`/`deploy` run it first. `.clasp.json`'s
+`rootDir` points at `build/`, which is gitignored (generated).
+
+**Why:** our `src/*.ts` files were already written with no `import`/`export`
+— Apps Script has no module system, so every file was designed to share
+one global scope by convention from the start. That means there is
+nothing to *bundle*: each file compiles independently and the output is
+already valid, load-order-independent Apps Script code. Pulling in
+Rollup/esbuild would add a dependency and a config file to solve a
+problem this codebase doesn't have. Revisit only if the code ever needs
+real ESM imports or an npm package as a runtime dependency.
+
 ## Header detection for Sheets -> JSON (2026-09-27)
 
 `convertSheetTab_` (src/sheets.ts) treats a sheet's first row as a header

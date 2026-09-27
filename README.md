@@ -82,10 +82,10 @@ convention).
 
 ```sh
 npm install
-npm run build   # type-check with tsc
-clasp login     # once, opens a browser — picks the Google account to push as
-clasp push      # push src/ to the Apps Script project
-clasp deploy    # cut a new library version
+npm run typecheck  # tsc --noEmit
+clasp login         # once, opens a browser — picks the Google account to push as
+npm run push        # builds (tsc emit to build/) then clasp push
+npm run deploy      # push, then cut a new library version
 ```
 
 See [docs/CONTEXT.md](docs/CONTEXT.md) for the project layout and

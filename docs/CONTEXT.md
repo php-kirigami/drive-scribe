@@ -24,13 +24,17 @@ src/
   drive.ts          — recursive folder walk, Drive file metadata (dates)
   docs.ts           — Document -> Markdown, recursing through tabs
   sheets.ts         — Spreadsheet -> JSON, one entry per sheet
+scripts/
+  build.mjs         — tsc emit to build/ + copies appsscript.json there
+build/              — generated, gitignored; what `clasp push` actually pushes
 ```
 
-No bundler, no `import`/`export`: Apps Script executes every file in the
-project as one shared global scope. TypeScript type-checks the whole
-`src/` folder as a single "global script" program (see `tsconfig.json`:
-`module: "none"`), which is why cross-file references type-check without
-explicit imports.
+No `import`/`export`: Apps Script executes every file in the project as
+one shared global scope. TypeScript type-checks the whole `src/` folder
+as a single "global script" program (see `tsconfig.json`: `module: "none"`),
+which is why cross-file references type-check without explicit imports.
+`npm run build` compiles `src/*.ts` to `build/*.js` — see
+[DECISIONS.md](DECISIONS.md) for why that's plain `tsc` and not a bundler.
 
 ## Public API
 

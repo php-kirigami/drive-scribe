@@ -8,10 +8,11 @@
     "node": ">=24.0.0"
   },
   "scripts": {
-    "build": "tsc --noEmit",
-    "push": "clasp push",
-    "deploy": "clasp version && clasp deploy",
-    "open": "clasp open"
+    "typecheck": "tsc --noEmit",
+    "build": "node scripts/build.mjs",
+    "push": "npm run build && clasp push",
+    "deploy": "npm run build && clasp push && clasp deploy",
+    "open": "clasp open-script"
   },
   "devDependencies": {
     "@google/clasp": "^3.0.0",
